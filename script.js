@@ -4,7 +4,6 @@ const c = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-console.log(c);
 // resize
 addEventListener("resize", () => {
   canvas.width = innerWidth;
@@ -31,7 +30,7 @@ class Particle {
     this.radius = radius;
     this.color = color;
     this.velocity = velocity;
-    this.ttl = 1000;
+    this.ttl = 1000;//time to live
   }
 
   draw() {
@@ -60,19 +59,21 @@ let hue = 0;
 let hueRadians = 0;
 function generateRing() {
   //time for the new ring
-  setTimeout(generateRing, 1000);
+  setTimeout(generateRing, 500);
   hue = Math.sin(hueRadians);
 
-  const particleCount = 70;
+  const particleCount = 50;
 
   for (let i = 0; i < particleCount; i++) {
-    // full circle = pi * 2 radians
+    // full circle = pi * 2 radians dividing it with particle count to get a reference angle
     const radian = (Math.PI * 2) / particleCount;
     const x = mouse.x;
     const y = mouse.y;
 
     particles.push(
-      new Particle(x, y, 5, `hsl(${Math.abs(hue * 360)}, 50%, 50%)`, {
+      new Particle(x, y, 2, `hsl(${Math.abs(hue * 720)}, 50%, 50%)`, {
+        //particles are giong to form on mouse click
+        //they are going to generated in all different direction in circle
         x: Math.cos(radian * i) * 3,
         y: Math.sin(radian * i) * 3,
       })
