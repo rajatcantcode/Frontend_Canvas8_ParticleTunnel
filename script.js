@@ -1,17 +1,21 @@
-import utils from "./utils.js";
-
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+console.log(c);
+// resize
+addEventListener("resize", () => {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  init();
+});
 
 const mouse = {
   x: innerWidth / 2,
   y: innerHeight / 2,
 };
-
-const colors = ["#2185C5", "#7ECEFD", "#FFF6E5", "#FF7F66"];
 
 // Event Listeners
 addEventListener("mousemove", (event) => {
@@ -19,20 +23,15 @@ addEventListener("mousemove", (event) => {
   mouse.y = event.clientY;
 });
 
-addEventListener("resize", () => {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
-
-  init();
-});
-
 // Objects
-class Object {
-  constructor(x, y, radius, color) {
+class Particle {
+  constructor(x, y, radius, color, velocity) {
     this.x = x;
     this.y = y;
     this.radius = radius;
     this.color = color;
+    this.velocity = velocity;
+    this.ttl = 1000;
   }
 
   draw() {
@@ -45,28 +44,71 @@ class Object {
 
   update() {
     this.draw();
+    this.x += this.velocity.x;
+    this.y += this.velocity.y;
+    this.ttl--;
   }
 }
 
 // Implementation
-let objects;
+let particles;
 function init() {
-  objects = [];
+  particles = [];
+}
 
-  for (let i = 0; i < 400; i++) {
-    // objects.push()
+let hue = 0;
+let hueRadians = 0;
+function generateRing() {
+  //time for the new ring
+  setTimeout(generateRing, 1000);
+  hue = Math.sin(hueRadians);
+
+  const particleCount = 70;
+
+  for (let i = 0; i < particleCount; i++) {
+    // full circle = pi * 2 radians
+    const radian = (Math.PI * 2) / particleCount;
+    const x = mouse.x;
+    const y = mouse.y;
+
+    particles.push(
+      new Particle(x, y, 5, `hsl(${Math.abs(hue * 360)}, 50%, 50%)`, {
+        x: Math.cos(radian * i) * 3,
+        y: Math.sin(radian * i) * 3,
+      })
+    );
   }
+
+  hueRadians += 0.01;
 }
 
 // Animation Loop
 function animate() {
   requestAnimationFrame(animate);
-  c.clearRect(0, 0, canvas.width, canvas.height);
+  c.fillStyle = "rgba(1, 0, 0, 1)";
+  c.fillRect(0, 0, canvas.width, canvas.height);
 
-  // objects.forEach(object => {
-  //  object.update()
-  // })
+  particles.forEach((particle, i) => {
+    if (particle.ttl < 0) {
+      particles.splice(i, 1);
+    } else {
+      particle.update();
+    }
+  });
 }
 
 init();
 animate();
+generateRing();
+
+// resize
+addEventListener("resize", () => {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  init();
+});
+// Mobile functionality
+canvas.addEventListener("touchmove", (e) => {
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+});
